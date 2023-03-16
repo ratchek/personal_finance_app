@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,11 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-obm!norlxvv_n%#xl1=bc2wu%d&sc0q1ktx7^e(lqoc+zi)hfc'
+SECRET_KEY = config("DJANGO_SECRET_KEY", default=get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = config("DEBUG", default = False, cast=bool) == True
+DEVELOPMENT_MODE = config("DEVELOPMENT_MODE", default = False, cast=bool) == True
 ALLOWED_HOSTS = [config('DOMAIN'), 'www.'+config('DOMAIN')]
 
 # Application definition
@@ -54,7 +55,7 @@ ROOT_URLCONF = 'personal_finance_tracker.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,17 +72,25 @@ WSGI_APPLICATION = 'personal_finance_tracker.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config("DB_NAME"),
-        'USER': config("DB_USER"),
-        'PASSWORD': config("DB_PASSWORD"),
-        'HOST': 'localhost',
-        'PORT': '',
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+if DEVELOPMENT_MODE is True:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME':  config("DB_NAME"),
+            'USER':  config("DB_USER") ,
+            'PASSWORD': config("DB_PASSWORD") ,
+            'HOST': 'localhost',
+            'PORT': '',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -118,11 +127,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "static"
+STATICFILES_DIRS = (
+    BASE_DIR / "staticfiles/",
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-import os
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
