@@ -29,6 +29,9 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default=get_random_secret_key())
 DEBUG = config("DEBUG", default=False, cast=bool) == True
 DEVELOPMENT_MODE = config("DEVELOPMENT_MODE", default=False, cast=bool) == True
 ALLOWED_HOSTS = [config("DOMAIN"), "www." + config("DOMAIN")]
+# Allow accessing site at localhost:8000 during development
+if DEVELOPMENT_MODE:
+    ALLOWED_HOSTS.append("localhost")
 
 # Application definition
 
